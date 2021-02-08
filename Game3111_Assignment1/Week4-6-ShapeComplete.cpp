@@ -5,13 +5,13 @@
 
 
 
-#include "../../Common/d3dApp.h"
+#include "../Common/d3dApp.h"
 
-#include "../../Common/MathHelper.h"
+#include "../Common/MathHelper.h"
 
-#include "../../Common/UploadBuffer.h"
+#include "../Common/UploadBuffer.h"
 
-#include "../../Common/GeometryGenerator.h"
+#include "../Common/GeometryGenerator.h"
 
 #include "FrameResource.h"
 
