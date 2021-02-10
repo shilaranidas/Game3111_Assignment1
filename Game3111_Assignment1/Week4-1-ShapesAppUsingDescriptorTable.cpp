@@ -732,15 +732,27 @@ void ShapesApp::BuildRenderItems()
 {
     UINT objCBIndex = 0;
     
-    CreateItem("box", XMMatrixScaling(0.5f, 5.0f, 18.0f), XMMatrixTranslation(9.0f, 1.2f, 0.0f), objCBIndex);//right wall
+    CreateItem("box", XMMatrixScaling(0.5f, 5.0f, 17.35f), XMMatrixTranslation(9.0f, 1.2f, 0.0f), objCBIndex);//right wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(0.5f, 5.0f, 18.0f), XMMatrixTranslation(-9.0f, 1.2f, 0.0f), objCBIndex);//left wall
+    CreateItem("box", XMMatrixScaling(0.5f, 5.0f, 17.35f), XMMatrixTranslation(-9.0f, 1.2f, 0.0f), objCBIndex);//left wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(12.5f, 5.0f, 0.5f), XMMatrixTranslation(0.0f, 1.2f, 13.5f), objCBIndex);// back wall
+    CreateItem("box", XMMatrixScaling(11.35f, 5.0f, 0.5f), XMMatrixTranslation(0.0f, 1.2f, 13.5f), objCBIndex);// back wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(4.0f, 5.0f, 0.5f), XMMatrixTranslation(-6.0f, 1.2f, -13.5f), objCBIndex);// front left wall
+    CreateItem("box", XMMatrixScaling(3.5f, 5.0f, 0.5f), XMMatrixTranslation(-6.0f, 1.2f, -13.5f), objCBIndex);// front left wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(4.0f, 5.0f, 0.5f), XMMatrixTranslation(6.0f, 1.2f, -13.5f), objCBIndex);// front right wall
+    CreateItem("box", XMMatrixScaling(3.5f, 5.0f, 0.5f), XMMatrixTranslation(6.0f, 1.2f, -13.5f), objCBIndex);// front right wall
+    objCBIndex++;
+    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-9.0f, 1.5f, 13.5f), objCBIndex);// back left 
+    objCBIndex++;
+    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(9.0f, 1.5f, 13.5f), objCBIndex);// back right 
+    objCBIndex++;
+    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-9.0f, 1.5f, -13.5f), objCBIndex);// front left 
+    objCBIndex++;
+    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(9.0f, 1.5f, -13.5f), objCBIndex);// front right 
+    objCBIndex++;
+    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-3.0f, 1.5f, -13.5f), objCBIndex);// front left door
+    objCBIndex++;
+    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(3.0f, 1.5f, -13.5f), objCBIndex);// front right door
     objCBIndex++;
    /* auto LeftWall = std::make_unique<RenderItem>();
     XMStoreFloat4x4(&LeftWall->World, XMMatrixScaling(0.5f, 5.0f, 18.0f) * XMMatrixTranslation(-9.0f, 1.2f, 0.0f));
@@ -773,7 +785,7 @@ void ShapesApp::BuildRenderItems()
     mAllRitems.push_back(std::move(gridRitem));
 
     
-    for (int i = 0; i < 5; ++i)
+    /*for (int i = 0; i < 4; ++i)
     {
         auto leftCylRitem = std::make_unique<RenderItem>();
         auto rightCylRitem = std::make_unique<RenderItem>();
@@ -822,7 +834,7 @@ void ShapesApp::BuildRenderItems()
         mAllRitems.push_back(std::move(rightCylRitem));
         mAllRitems.push_back(std::move(leftSphereRitem));
         mAllRitems.push_back(std::move(rightSphereRitem));
-    }
+    }*/
 
     // All the render items are opaque.
     for (auto& e : mAllRitems)
