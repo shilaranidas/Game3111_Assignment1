@@ -94,6 +94,15 @@ public:
 	/// <param name="stackCount"></param>
 	/// <returns></returns>
 	MeshData CreateCone(float bottomRadius, float height, uint32 sliceCount, uint32 stackCount);
+	/// <summary>
+	/// pyramid
+	/// </summary>
+	/// <param name="width"></param>
+	/// <param name="height"></param>
+	/// <param name="depth"></param>
+	/// <param name="numSubdivisions"></param>
+	/// <returns></returns>
+	MeshData CreatePyramid(float width, float height, float depth, uint32 numSubdivisions);
 	///<summary>
 	/// Creates a geosphere centered at the origin with the given radius.  The
 	/// depth controls the level of tessellation.

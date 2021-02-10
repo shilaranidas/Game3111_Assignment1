@@ -99,6 +99,79 @@ GeometryGenerator::MeshData GeometryGenerator::CreateBox(float width, float heig
 
     return meshData;
 }
+GeometryGenerator::MeshData GeometryGenerator::CreatePyramid(float width, float height, float depth, uint32 numSubdivisions)
+{
+	MeshData meshData;
+
+	//Create vertices
+	Vertex v[16];
+
+	float w2 = 0.5f * width;
+	float h2 = 0.5f * height;
+	float d2 = 0.5f * depth;
+
+	//Bottom squre
+	v[0] = Vertex(-w2, -h2, +d2, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	v[1] = Vertex(-w2, -h2, -d2, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	v[2] = Vertex(+w2, -h2, -d2, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	v[3] = Vertex(+w2, -h2, +d2, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+
+	//Front Triangle
+	v[4] = Vertex(0, +h2, 0, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.5f, 0.0f);
+	v[5] = Vertex(+w2, -h2, -d2, 0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	v[6] = Vertex(-w2, -h2, -d2, 0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	//Right Triangle
+	v[7] = Vertex(0, +h2, 0, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.5f, 0.0f);
+	v[8] = Vertex(+w2, -h2, +d2, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	v[9] = Vertex(+w2, -h2, -d2, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	//Back Triangle
+	v[10] = Vertex(0, +h2, 0, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.5f, 0.0f);
+	v[11] = Vertex(-w2, -h2, +d2, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	v[12] = Vertex(+w2, -h2, +d2, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	//Left Triangle
+	v[13] = Vertex(0, +h2, 0, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.5f, 0.0f);
+	v[14] = Vertex(-w2, -h2, -d2, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	v[15] = Vertex(-w2, -h2, +d2, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+
+	meshData.Vertices.assign(&v[0], &v[16]);
+
+	//
+	// Create the indices.
+	//
+
+	uint32 i[18];
+
+	//Bottom square
+	i[0] = 0; i[1] = 1; i[2] = 2;
+	i[3] = 0; i[4] = 2; i[5] = 3;
+
+	//Front triangle
+	i[6] = 4; i[7] = 5; i[8] = 6;
+
+	//Right Triangle
+	i[9] = 7; i[10] = 8; i[11] = 9;
+
+	//Back Triangle
+	i[12] = 10; i[13] = 11; i[14] = 12;
+
+	//Let Triangle
+	i[15] = 13; i[16] = 14; i[17] = 15;
+
+
+	meshData.Indices32.assign(&i[0], &i[18]);
+
+	// Put a cap on the number of subdivisions.
+	numSubdivisions = std::min<uint32>(numSubdivisions, 6u);
+
+	for (uint32 i = 0; i < numSubdivisions; ++i)
+		Subdivide(meshData);
+
+	return meshData;
+}
 GeometryGenerator::MeshData GeometryGenerator::CreateCone(float bottomRadius, float height, uint32 sliceCount, uint32 stackCount)
 {
 	MeshData meshData;

@@ -550,6 +550,7 @@ void ShapesApp::BuildShapeGeometry()
     GeometryGenerator::MeshData sphere = geoGen.CreateSphere(0.5f, 20, 20);
     GeometryGenerator::MeshData cylinder = geoGen.CreateCylinder(0.5f, 0.5f, 3.0f, 20, 20);
     GeometryGenerator::MeshData cone = geoGen.CreateCone(1.f, 1.f, 40, 6);
+    GeometryGenerator::MeshData pyramid = geoGen.CreatePyramid(1, 1, 1, 0);
     //
     // We are concatenating all the geometry into one big vertex/index buffer.  So
     // define the regions in the buffer each submesh covers.
@@ -561,6 +562,7 @@ void ShapesApp::BuildShapeGeometry()
     UINT sphereVertexOffset = gridVertexOffset + (UINT)grid.Vertices.size();
     UINT cylinderVertexOffset = sphereVertexOffset + (UINT)sphere.Vertices.size();
     UINT coneVertexOffset = cylinderVertexOffset + (UINT)cylinder.Vertices.size();
+    UINT pyramidVertexOffset = coneVertexOffset + (UINT)cone.Vertices.size();
 
     // Cache the starting index for each object in the concatenated index buffer.
     UINT boxIndexOffset = 0;
@@ -568,6 +570,7 @@ void ShapesApp::BuildShapeGeometry()
     UINT sphereIndexOffset = gridIndexOffset + (UINT)grid.Indices32.size();
     UINT cylinderIndexOffset = sphereIndexOffset + (UINT)sphere.Indices32.size();
     UINT coneIndexOffset = cylinderIndexOffset + (UINT)cylinder.Indices32.size();
+    UINT pyramidIndexOffset = coneIndexOffset + (UINT)cone.Indices32.size();
     // Define the SubmeshGeometry that cover different 
     // regions of the vertex/index buffers.
 
@@ -596,6 +599,11 @@ void ShapesApp::BuildShapeGeometry()
     coneSubmesh.StartIndexLocation = coneIndexOffset;
     coneSubmesh.BaseVertexLocation = coneVertexOffset;
 
+    SubmeshGeometry pyramidSubmesh;
+    pyramidSubmesh.IndexCount = (UINT)pyramid.Indices32.size();
+    pyramidSubmesh.StartIndexLocation = pyramidIndexOffset;
+    pyramidSubmesh.BaseVertexLocation = pyramidVertexOffset;
+
     //
     // Extract the vertex elements we are interested in and pack the
     // vertices of all the meshes into one vertex buffer.
@@ -606,7 +614,8 @@ void ShapesApp::BuildShapeGeometry()
         grid.Vertices.size() +
         sphere.Vertices.size() +
         cylinder.Vertices.size()+
-        cone.Vertices.size();
+        cone.Vertices.size()+
+        pyramid.Vertices.size();
 
     std::vector<Vertex> vertices(totalVertexCount);
 
@@ -639,12 +648,18 @@ void ShapesApp::BuildShapeGeometry()
         vertices[k].Pos = cone.Vertices[i].Position;
         vertices[k].Color = XMFLOAT4(DirectX::Colors::Blue);
     }
+    for (size_t i = 0; i < pyramid.Vertices.size(); ++i, ++k)
+    {
+        vertices[k].Pos = pyramid.Vertices[i].Position;
+        vertices[k].Color = XMFLOAT4(DirectX::Colors::DarkRed);
+    }
     std::vector<std::uint16_t> indices;
     indices.insert(indices.end(), std::begin(box.GetIndices16()), std::end(box.GetIndices16()));
     indices.insert(indices.end(), std::begin(grid.GetIndices16()), std::end(grid.GetIndices16()));
     indices.insert(indices.end(), std::begin(sphere.GetIndices16()), std::end(sphere.GetIndices16()));
     indices.insert(indices.end(), std::begin(cylinder.GetIndices16()), std::end(cylinder.GetIndices16()));
     indices.insert(indices.end(), std::begin(cone.GetIndices16()), std::end(cone.GetIndices16()));
+    indices.insert(indices.end(), std::begin(pyramid.GetIndices16()), std::end(pyramid.GetIndices16()));
 
     const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
     const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
@@ -674,6 +689,7 @@ void ShapesApp::BuildShapeGeometry()
     geo->DrawArgs["sphere"] = sphereSubmesh;
     geo->DrawArgs["cylinder"] = cylinderSubmesh;
     geo->DrawArgs["cone"] = coneSubmesh;
+    geo->DrawArgs["pyramid"] = pyramidSubmesh;
     mGeometries[geo->Name] = std::move(geo);
 }
 
@@ -773,9 +789,9 @@ void ShapesApp::BuildRenderItems()
     objCBIndex++;
     CreateItem("box", XMMatrixScaling(2.5f, 2.0f, 0.1f), XMMatrixTranslation(6.7f, 2.9f, 13.5f), objCBIndex);//back top wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(3.5f, 7.0f, 0.5f), XMMatrixTranslation(-6.0f, 1.7f, -13.5f), objCBIndex);// front left wall
+    CreateItem("box", XMMatrixScaling(3.5f, 6.0f, 0.5f), XMMatrixTranslation(-6.0f, 1.4f, -13.5f), objCBIndex);// front left wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(3.5f, 7.0f, 0.5f), XMMatrixTranslation(6.0f, 1.7f, -13.5f), objCBIndex);// front right wall
+    CreateItem("box", XMMatrixScaling(3.5f, 6.0f, 0.5f), XMMatrixTranslation(6.0f, 1.4f, -13.5f), objCBIndex);// front right wall
     objCBIndex++;
     CreateItem("box", XMMatrixScaling(4.0f, 2.0f, 0.5f), XMMatrixTranslation(0.0f, 3.5f, -13.0f), objCBIndex);// front gate top
     objCBIndex++;
@@ -799,6 +815,27 @@ void ShapesApp::BuildRenderItems()
     CreateItem("cone", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(9.0f, 4.0f, 13.5f), objCBIndex);// back right cone
     objCBIndex++;
     CreateItem("cone", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-9.0f, 4.0f, 13.5f), objCBIndex);// back left cone
+    objCBIndex++;
+
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-7.8f, 3.45f, -13.5f), objCBIndex);// front left pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-6.8f, 3.45f, -13.5f), objCBIndex);// front left pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-5.8f, 3.45f, -13.5f), objCBIndex);// front left pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-4.8f, 3.45f, -13.5f), objCBIndex);// front left pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-3.8f, 3.45f, -13.5f), objCBIndex);// front left pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(3.8f, 3.45f, -13.5f), objCBIndex);// front right pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(4.8f, 3.45f, -13.5f), objCBIndex);// front right pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(5.8f, 3.45f, -13.5f), objCBIndex);// front right pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(6.8f, 3.45f, -13.5f), objCBIndex);// front right pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(7.8f, 3.45f, -13.5f), objCBIndex);// front right pyramid
     objCBIndex++;
    /* auto LeftWall = std::make_unique<RenderItem>();
     XMStoreFloat4x4(&LeftWall->World, XMMatrixScaling(0.5f, 5.0f, 18.0f) * XMMatrixTranslation(-9.0f, 1.2f, 0.0f));
