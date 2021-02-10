@@ -722,6 +722,7 @@ void ShapesApp::CreateItem(const char* item, XMMATRIX p, XMMATRIX q, UINT ObjInd
     XMStoreFloat4x4(&RightWall->World, p * q);
     RightWall->ObjCBIndex = ObjIndex;
     RightWall->Geo = mGeometries["shapeGeo"].get();
+    
     RightWall->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     RightWall->IndexCount = RightWall->Geo->DrawArgs[item].IndexCount;
     RightWall->StartIndexLocation = RightWall->Geo->DrawArgs[item].StartIndexLocation;
@@ -734,9 +735,31 @@ void ShapesApp::BuildRenderItems()
     
     CreateItem("box", XMMatrixScaling(0.5f, 5.0f, 17.35f), XMMatrixTranslation(9.0f, 1.2f, 0.0f), objCBIndex);//right wall
     objCBIndex++;
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(9.0f, 2.9f, 11.2f), objCBIndex);//right top wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(9.0f, 2.9f, 3.7f), objCBIndex);//right top wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(9.0f, 2.9f, -3.7f), objCBIndex);//right top wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(9.0f, 2.9f, -11.2f), objCBIndex);//right top wall
+    objCBIndex++;
     CreateItem("box", XMMatrixScaling(0.5f, 5.0f, 17.35f), XMMatrixTranslation(-9.0f, 1.2f, 0.0f), objCBIndex);//left wall
     objCBIndex++;
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(-9.0f, 2.9f, 11.2f), objCBIndex);//left top wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(-9.0f, 2.9f, 3.7f), objCBIndex);//left top wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(-9.0f, 2.9f, -3.7f), objCBIndex);//left top wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(-9.0f, 2.9f, -11.2f), objCBIndex);//left top wall
+    objCBIndex++;
     CreateItem("box", XMMatrixScaling(11.35f, 5.0f, 0.5f), XMMatrixTranslation(0.0f, 1.2f, 13.5f), objCBIndex);// back wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(2.5f, 2.0f, 0.1f), XMMatrixTranslation(-6.7f, 2.9f, 13.5f), objCBIndex);//back top wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(2.5f, 2.0f, 0.1f), XMMatrixTranslation(0.0f, 2.9f, 13.5f), objCBIndex);//back top wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(2.5f, 2.0f, 0.1f), XMMatrixTranslation(6.7f, 2.9f, 13.5f), objCBIndex);//back top wall
     objCBIndex++;
     CreateItem("box", XMMatrixScaling(3.5f, 5.0f, 0.5f), XMMatrixTranslation(-6.0f, 1.2f, -13.5f), objCBIndex);// front left wall
     objCBIndex++;
