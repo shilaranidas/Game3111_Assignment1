@@ -79,7 +79,7 @@ private:
     void BuildPSOs();
     void BuildFrameResources();
     void BuildRenderItems();
-    void CreateItem(const char* item, XMMATRIX p, XMMATRIX q, UINT ObjIndex);
+    void CreateItem(const char* item, XMMATRIX p, XMMATRIX q, XMMATRIX r, UINT ObjIndex);
     void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
 
 private:
@@ -551,6 +551,7 @@ void ShapesApp::BuildShapeGeometry()
     GeometryGenerator::MeshData cylinder = geoGen.CreateCylinder(0.5f, 0.5f, 3.0f, 20, 20);
     GeometryGenerator::MeshData cone = geoGen.CreateCone(1.f, 1.f, 40, 6);
     GeometryGenerator::MeshData pyramid = geoGen.CreatePyramid(1, 1, 1, 0);
+    GeometryGenerator::MeshData wedge = geoGen.CreateWedge(1, 1, 1, 0);
     //
     // We are concatenating all the geometry into one big vertex/index buffer.  So
     // define the regions in the buffer each submesh covers.
@@ -563,6 +564,7 @@ void ShapesApp::BuildShapeGeometry()
     UINT cylinderVertexOffset = sphereVertexOffset + (UINT)sphere.Vertices.size();
     UINT coneVertexOffset = cylinderVertexOffset + (UINT)cylinder.Vertices.size();
     UINT pyramidVertexOffset = coneVertexOffset + (UINT)cone.Vertices.size();
+    UINT wedgeVertexOffset = pyramidVertexOffset + (UINT)pyramid.Vertices.size();
 
     // Cache the starting index for each object in the concatenated index buffer.
     UINT boxIndexOffset = 0;
@@ -571,6 +573,7 @@ void ShapesApp::BuildShapeGeometry()
     UINT cylinderIndexOffset = sphereIndexOffset + (UINT)sphere.Indices32.size();
     UINT coneIndexOffset = cylinderIndexOffset + (UINT)cylinder.Indices32.size();
     UINT pyramidIndexOffset = coneIndexOffset + (UINT)cone.Indices32.size();
+    UINT wedgeIndexOffset = pyramidIndexOffset + (UINT)pyramid.Indices32.size();
     // Define the SubmeshGeometry that cover different 
     // regions of the vertex/index buffers.
 
@@ -604,6 +607,10 @@ void ShapesApp::BuildShapeGeometry()
     pyramidSubmesh.StartIndexLocation = pyramidIndexOffset;
     pyramidSubmesh.BaseVertexLocation = pyramidVertexOffset;
 
+    SubmeshGeometry wedgeSubmesh;
+    wedgeSubmesh.IndexCount = (UINT)wedge.Indices32.size();
+    wedgeSubmesh.StartIndexLocation = wedgeIndexOffset;
+    wedgeSubmesh.BaseVertexLocation = wedgeVertexOffset;
     //
     // Extract the vertex elements we are interested in and pack the
     // vertices of all the meshes into one vertex buffer.
@@ -615,8 +622,9 @@ void ShapesApp::BuildShapeGeometry()
         sphere.Vertices.size() +
         cylinder.Vertices.size()+
         cone.Vertices.size()+
-        pyramid.Vertices.size();
-
+        pyramid.Vertices.size()+
+        wedge.Vertices.size();
+    
     std::vector<Vertex> vertices(totalVertexCount);
 
     UINT k = 0;
@@ -653,6 +661,11 @@ void ShapesApp::BuildShapeGeometry()
         vertices[k].Pos = pyramid.Vertices[i].Position;
         vertices[k].Color = XMFLOAT4(DirectX::Colors::DarkRed);
     }
+    for (size_t i = 0; i < wedge.Vertices.size(); ++i, ++k)
+    {
+        vertices[k].Pos = wedge.Vertices[i].Position;
+        vertices[k].Color = XMFLOAT4(DirectX::Colors::Yellow);
+    }
     std::vector<std::uint16_t> indices;
     indices.insert(indices.end(), std::begin(box.GetIndices16()), std::end(box.GetIndices16()));
     indices.insert(indices.end(), std::begin(grid.GetIndices16()), std::end(grid.GetIndices16()));
@@ -660,6 +673,7 @@ void ShapesApp::BuildShapeGeometry()
     indices.insert(indices.end(), std::begin(cylinder.GetIndices16()), std::end(cylinder.GetIndices16()));
     indices.insert(indices.end(), std::begin(cone.GetIndices16()), std::end(cone.GetIndices16()));
     indices.insert(indices.end(), std::begin(pyramid.GetIndices16()), std::end(pyramid.GetIndices16()));
+    indices.insert(indices.end(), std::begin(wedge.GetIndices16()), std::end(wedge.GetIndices16()));
 
     const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
     const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
@@ -689,7 +703,8 @@ void ShapesApp::BuildShapeGeometry()
     geo->DrawArgs["sphere"] = sphereSubmesh;
     geo->DrawArgs["cylinder"] = cylinderSubmesh;
     geo->DrawArgs["cone"] = coneSubmesh;
-    geo->DrawArgs["pyramid"] = pyramidSubmesh;
+    geo->DrawArgs["pyramid"] = pyramidSubmesh; 
+    geo->DrawArgs["wedge"] = wedgeSubmesh;
     mGeometries[geo->Name] = std::move(geo);
 }
 
@@ -744,10 +759,10 @@ void ShapesApp::BuildFrameResources()
             1, (UINT)mAllRitems.size()));
     }
 }
-void ShapesApp::CreateItem(const char* item, XMMATRIX p, XMMATRIX q, UINT ObjIndex)
+void ShapesApp::CreateItem(const char* item, XMMATRIX p, XMMATRIX q,XMMATRIX r, UINT ObjIndex)
 {
     auto RightWall = std::make_unique<RenderItem>();
-    XMStoreFloat4x4(&RightWall->World, p * q);
+    XMStoreFloat4x4(&RightWall->World, p * q * r);
     RightWall->ObjCBIndex = ObjIndex;
     RightWall->Geo = mGeometries["shapeGeo"].get();
     
@@ -761,81 +776,81 @@ void ShapesApp::BuildRenderItems()
 {
     UINT objCBIndex = 0;
     
-    CreateItem("box", XMMatrixScaling(0.5f, 5.0f, 17.35f), XMMatrixTranslation(9.0f, 1.2f, 0.0f), objCBIndex);//right wall
+    CreateItem("box", XMMatrixScaling(0.5f, 5.0f, 17.35f), XMMatrixTranslation(9.0f, 1.2f, 0.0f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//right wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(9.0f, 2.9f, 11.2f), objCBIndex);//right top wall
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(9.0f, 2.9f, 11.2f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//right top wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(9.0f, 2.9f, 3.7f), objCBIndex);//right top wall
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(9.0f, 2.9f, 3.7f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//right top wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(9.0f, 2.9f, -3.7f), objCBIndex);//right top wall
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(9.0f, 2.9f, -3.7f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//right top wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(9.0f, 2.9f, -11.2f), objCBIndex);//right top wall
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(9.0f, 2.9f, -11.2f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//right top wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(0.5f, 5.0f, 17.35f), XMMatrixTranslation(-9.0f, 1.2f, 0.0f), objCBIndex);//left wall
+    CreateItem("box", XMMatrixScaling(0.5f, 5.0f, 17.35f), XMMatrixTranslation(-9.0f, 1.2f, 0.0f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//left wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(-9.0f, 2.9f, 11.2f), objCBIndex);//left top wall
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(-9.0f, 2.9f, 11.2f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//left top wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(-9.0f, 2.9f, 3.7f), objCBIndex);//left top wall
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(-9.0f, 2.9f, 3.7f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//left top wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(-9.0f, 2.9f, -3.7f), objCBIndex);//left top wall
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(-9.0f, 2.9f, -3.7f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//left top wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(-9.0f, 2.9f, -11.2f), objCBIndex);//left top wall
+    CreateItem("box", XMMatrixScaling(0.1f, 2.0f, 2.5f), XMMatrixTranslation(-9.0f, 2.9f, -11.2f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//left top wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(11.35f, 5.0f, 0.5f), XMMatrixTranslation(0.0f, 1.2f, 13.5f), objCBIndex);// back wall
+    CreateItem("box", XMMatrixScaling(11.35f, 5.0f, 0.5f), XMMatrixTranslation(0.0f, 1.2f, 13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// back wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(2.5f, 2.0f, 0.1f), XMMatrixTranslation(-6.7f, 2.9f, 13.5f), objCBIndex);//back top wall
+    CreateItem("wedge", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-6.7f, 2.9f, 13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//back top wedge
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(2.5f, 2.0f, 0.1f), XMMatrixTranslation(0.0f, 2.9f, 13.5f), objCBIndex);//back top wall
+    //CreateItem("box", XMMatrixScaling(2.5f, 2.0f, 0.1f), XMMatrixTranslation(0.0f, 2.9f, 13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//back top wall
+    //objCBIndex++;
+    //CreateItem("box", XMMatrixScaling(2.5f, 2.0f, 0.1f), XMMatrixTranslation(6.7f, 2.9f, 13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);//back top wall
+    //objCBIndex++;
+    CreateItem("box", XMMatrixScaling(3.5f, 6.0f, 0.5f), XMMatrixTranslation(-6.0f, 1.4f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front left wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(2.5f, 2.0f, 0.1f), XMMatrixTranslation(6.7f, 2.9f, 13.5f), objCBIndex);//back top wall
+    CreateItem("box", XMMatrixScaling(3.5f, 6.0f, 0.5f), XMMatrixTranslation(6.0f, 1.4f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front right wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(3.5f, 6.0f, 0.5f), XMMatrixTranslation(-6.0f, 1.4f, -13.5f), objCBIndex);// front left wall
-    objCBIndex++;
-    CreateItem("box", XMMatrixScaling(3.5f, 6.0f, 0.5f), XMMatrixTranslation(6.0f, 1.4f, -13.5f), objCBIndex);// front right wall
-    objCBIndex++;
-    CreateItem("box", XMMatrixScaling(4.0f, 2.0f, 0.5f), XMMatrixTranslation(0.0f, 3.5f, -13.0f), objCBIndex);// front gate top
-    objCBIndex++;
-
-    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.2f, 1.0f), XMMatrixTranslation(-9.0f, 1.8f, 13.5f), objCBIndex);// back left 
-    objCBIndex++;
-    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.2f, 1.0f), XMMatrixTranslation(9.0f, 1.8f, 13.5f), objCBIndex);// back right 
-    objCBIndex++;
-    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.2f, 1.0f), XMMatrixTranslation(-9.0f, 1.8f, -13.5f), objCBIndex);// front left 
-    objCBIndex++;
-    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.2f, 1.0f), XMMatrixTranslation(9.0f, 1.8f, -13.5f), objCBIndex);// front right 
-    objCBIndex++;
-    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-3.0f, 1.5f, -13.5f), objCBIndex);// front left door
-    objCBIndex++;
-    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(3.0f, 1.5f, -13.5f), objCBIndex);// front right door
-    objCBIndex++;
-    CreateItem("cone", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(9.0f, 4.0f, -13.5f), objCBIndex);// front right cone
-    objCBIndex++;
-    CreateItem("cone", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-9.0f, 4.0f, -13.5f), objCBIndex);// front left cone
-    objCBIndex++;
-    CreateItem("cone", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(9.0f, 4.0f, 13.5f), objCBIndex);// back right cone
-    objCBIndex++;
-    CreateItem("cone", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-9.0f, 4.0f, 13.5f), objCBIndex);// back left cone
+    CreateItem("box", XMMatrixScaling(4.0f, 2.0f, 0.5f), XMMatrixTranslation(0.0f, 3.5f, -13.0f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front gate top
     objCBIndex++;
 
-    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-7.8f, 3.45f, -13.5f), objCBIndex);// front left pyramid
+    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.2f, 1.0f), XMMatrixTranslation(-9.0f, 1.8f, 13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// back left 
     objCBIndex++;
-    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-6.8f, 3.45f, -13.5f), objCBIndex);// front left pyramid
+    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.2f, 1.0f), XMMatrixTranslation(9.0f, 1.8f, 13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// back right 
     objCBIndex++;
-    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-5.8f, 3.45f, -13.5f), objCBIndex);// front left pyramid
+    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.2f, 1.0f), XMMatrixTranslation(-9.0f, 1.8f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front left 
     objCBIndex++;
-    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-4.8f, 3.45f, -13.5f), objCBIndex);// front left pyramid
+    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.2f, 1.0f), XMMatrixTranslation(9.0f, 1.8f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front right 
     objCBIndex++;
-    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-3.8f, 3.45f, -13.5f), objCBIndex);// front left pyramid
+    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-3.0f, 1.5f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front left door
     objCBIndex++;
-    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(3.8f, 3.45f, -13.5f), objCBIndex);// front right pyramid
+    CreateItem("cylinder", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(3.0f, 1.5f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front right door
     objCBIndex++;
-    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(4.8f, 3.45f, -13.5f), objCBIndex);// front right pyramid
+    CreateItem("cone", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(9.0f, 4.0f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front right cone
     objCBIndex++;
-    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(5.8f, 3.45f, -13.5f), objCBIndex);// front right pyramid
+    CreateItem("cone", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-9.0f, 4.0f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front left cone
     objCBIndex++;
-    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(6.8f, 3.45f, -13.5f), objCBIndex);// front right pyramid
+    CreateItem("cone", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(9.0f, 4.0f, 13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// back right cone
     objCBIndex++;
-    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(7.8f, 3.45f, -13.5f), objCBIndex);// front right pyramid
+    CreateItem("cone", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-9.0f, 4.0f, 13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// back left cone
+    objCBIndex++;
+
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-7.8f, 3.45f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front left pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-6.8f, 3.45f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front left pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-5.8f, 3.45f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front left pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-4.8f, 3.45f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front left pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-3.8f, 3.45f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front left pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(3.8f, 3.45f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front right pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(4.8f, 3.45f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front right pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(5.8f, 3.45f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front right pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(6.8f, 3.45f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front right pyramid
+    objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(7.8f, 3.45f, -13.5f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front right pyramid
     objCBIndex++;
    /* auto LeftWall = std::make_unique<RenderItem>();
     XMStoreFloat4x4(&LeftWall->World, XMMatrixScaling(0.5f, 5.0f, 18.0f) * XMMatrixTranslation(-9.0f, 1.2f, 0.0f));
