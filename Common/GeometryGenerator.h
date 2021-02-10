@@ -85,7 +85,15 @@ public:
 	/// slices and stacks parameters control the degree of tessellation.
 	///</summary>
     MeshData CreateSphere(float radius, uint32 sliceCount, uint32 stackCount);
-
+	/// <summary>
+	/// //create Cone
+	/// </summary>
+	/// <param name="bottomRadius"></param>
+	/// <param name="height"></param>
+	/// <param name="sliceCount"></param>
+	/// <param name="stackCount"></param>
+	/// <returns></returns>
+	MeshData CreateCone(float bottomRadius, float height, uint32 sliceCount, uint32 stackCount);
 	///<summary>
 	/// Creates a geosphere centered at the origin with the given radius.  The
 	/// depth controls the level of tessellation.
@@ -115,5 +123,7 @@ private:
     Vertex MidPoint(const Vertex& v0, const Vertex& v1);
     void BuildCylinderTopCap(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount, MeshData& meshData);
     void BuildCylinderBottomCap(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount, MeshData& meshData);
+	void BuildConeTopCap(float height, uint32 sliceCount, MeshData& meshData);
+
 };
 
