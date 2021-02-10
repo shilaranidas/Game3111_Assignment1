@@ -719,7 +719,7 @@ void ShapesApp::BuildFrameResources()
 void ShapesApp::BuildRenderItems()
 {
     auto boxRitem = std::make_unique<RenderItem>();
-    XMStoreFloat4x4(&boxRitem->World, XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixTranslation(0.0f, 0.5f, 0.0f));
+    XMStoreFloat4x4(&boxRitem->World, XMMatrixScaling(0.5f, 5.0f, 18.0f) * XMMatrixTranslation(9.0f, 1.2f, 0.0f));
     boxRitem->ObjCBIndex = 0;
     boxRitem->Geo = mGeometries["shapeGeo"].get();
     boxRitem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -727,6 +727,16 @@ void ShapesApp::BuildRenderItems()
     boxRitem->StartIndexLocation = boxRitem->Geo->DrawArgs["box"].StartIndexLocation;
     boxRitem->BaseVertexLocation = boxRitem->Geo->DrawArgs["box"].BaseVertexLocation;
     mAllRitems.push_back(std::move(boxRitem));
+
+    /*auto boxRitem1 = std::make_unique<RenderItem>();
+    XMStoreFloat4x4(&boxRitem1->World, XMMatrixScaling(1.0f, 1.0f, 1.0f) * XMMatrixTranslation(2.0f, 0.5f, 2.0f));
+    boxRitem1->ObjCBIndex = 0;
+    boxRitem1->Geo = mGeometries["shapeGeo"].get();
+    boxRitem1->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    boxRitem1->IndexCount = boxRitem1->Geo->DrawArgs["box"].IndexCount;
+    boxRitem1->StartIndexLocation = boxRitem1->Geo->DrawArgs["box"].StartIndexLocation;
+    boxRitem1->BaseVertexLocation = boxRitem1->Geo->DrawArgs["box"].BaseVertexLocation;
+    mAllRitems.push_back(std::move(boxRitem1));*/
 
     auto gridRitem = std::make_unique<RenderItem>();
     gridRitem->World = MathHelper::Identity4x4();
