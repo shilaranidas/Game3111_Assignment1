@@ -761,10 +761,13 @@ void ShapesApp::BuildRenderItems()
     objCBIndex++;
     CreateItem("box", XMMatrixScaling(2.5f, 2.0f, 0.1f), XMMatrixTranslation(6.7f, 2.9f, 13.5f), objCBIndex);//back top wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(3.5f, 5.0f, 0.5f), XMMatrixTranslation(-6.0f, 1.2f, -13.5f), objCBIndex);// front left wall
+    CreateItem("box", XMMatrixScaling(3.5f, 7.0f, 0.5f), XMMatrixTranslation(-6.0f, 1.2f, -13.5f), objCBIndex);// front left wall
     objCBIndex++;
-    CreateItem("box", XMMatrixScaling(3.5f, 5.0f, 0.5f), XMMatrixTranslation(6.0f, 1.2f, -13.5f), objCBIndex);// front right wall
+    CreateItem("box", XMMatrixScaling(3.5f, 7.0f, 0.5f), XMMatrixTranslation(6.0f, 1.2f, -13.5f), objCBIndex);// front right wall
     objCBIndex++;
+    CreateItem("box", XMMatrixScaling(4.0f, 2.0f, 0.5f), XMMatrixTranslation(0.0f, 3.5f, -13.0f), objCBIndex);// front gate top
+    objCBIndex++;
+
     CreateItem("cylinder", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(-9.0f, 1.5f, 13.5f), objCBIndex);// back left 
     objCBIndex++;
     CreateItem("cylinder", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(9.0f, 1.5f, 13.5f), objCBIndex);// back right 
