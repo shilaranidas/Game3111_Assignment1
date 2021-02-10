@@ -42,6 +42,9 @@
     <ClCompile Include="Week4-6-ShapeComplete.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Week4-1-ShapesAppUsingDescriptorTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Camera.h">
