@@ -79,6 +79,7 @@ private:
     void BuildPSOs();
     void BuildFrameResources();
     void BuildRenderItems();
+    void CreateItem(const char* item, XMMATRIX p, XMMATRIX q, UINT ObjIndex);
     void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
 
 private:
@@ -606,7 +607,7 @@ void ShapesApp::BuildShapeGeometry()
     for (size_t i = 0; i < box.Vertices.size(); ++i, ++k)
     {
         vertices[k].Pos = box.Vertices[i].Position;
-        vertices[k].Color = XMFLOAT4(DirectX::Colors::DarkGreen);
+        vertices[k].Color = XMFLOAT4(DirectX::Colors::DarkGray);
     }
 
     for (size_t i = 0; i < grid.Vertices.size(); ++i, ++k)
@@ -715,21 +716,33 @@ void ShapesApp::BuildFrameResources()
             1, (UINT)mAllRitems.size()));
     }
 }
-
+void ShapesApp::CreateItem(const char* item, XMMATRIX p, XMMATRIX q, UINT ObjIndex)
+{
+    auto RightWall = std::make_unique<RenderItem>();
+    XMStoreFloat4x4(&RightWall->World, p * q);
+    RightWall->ObjCBIndex = ObjIndex;
+    RightWall->Geo = mGeometries["shapeGeo"].get();
+    RightWall->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    RightWall->IndexCount = RightWall->Geo->DrawArgs[item].IndexCount;
+    RightWall->StartIndexLocation = RightWall->Geo->DrawArgs[item].StartIndexLocation;
+    RightWall->BaseVertexLocation = RightWall->Geo->DrawArgs[item].BaseVertexLocation;
+    mAllRitems.push_back(std::move(RightWall));
+}
 void ShapesApp::BuildRenderItems()
 {
     UINT objCBIndex = 0;
-    auto RightWall = std::make_unique<RenderItem>();
-    XMStoreFloat4x4(&RightWall->World, XMMatrixScaling(0.5f, 5.0f, 18.0f) * XMMatrixTranslation(9.0f, 1.2f, 0.0f));
-    RightWall->ObjCBIndex = objCBIndex++;
-    RightWall->Geo = mGeometries["shapeGeo"].get();
-    RightWall->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-    RightWall->IndexCount = RightWall->Geo->DrawArgs["box"].IndexCount;
-    RightWall->StartIndexLocation = RightWall->Geo->DrawArgs["box"].StartIndexLocation;
-    RightWall->BaseVertexLocation = RightWall->Geo->DrawArgs["box"].BaseVertexLocation;
-    mAllRitems.push_back(std::move(RightWall));
-
-    auto LeftWall = std::make_unique<RenderItem>();
+    
+    CreateItem("box", XMMatrixScaling(0.5f, 5.0f, 18.0f), XMMatrixTranslation(9.0f, 1.2f, 0.0f), objCBIndex);//right wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(0.5f, 5.0f, 18.0f), XMMatrixTranslation(-9.0f, 1.2f, 0.0f), objCBIndex);//left wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(12.5f, 5.0f, 0.5f), XMMatrixTranslation(0.0f, 1.2f, 13.5f), objCBIndex);// back wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(4.0f, 5.0f, 0.5f), XMMatrixTranslation(-6.0f, 1.2f, -13.5f), objCBIndex);// front left wall
+    objCBIndex++;
+    CreateItem("box", XMMatrixScaling(4.0f, 5.0f, 0.5f), XMMatrixTranslation(6.0f, 1.2f, -13.5f), objCBIndex);// front right wall
+    objCBIndex++;
+   /* auto LeftWall = std::make_unique<RenderItem>();
     XMStoreFloat4x4(&LeftWall->World, XMMatrixScaling(0.5f, 5.0f, 18.0f) * XMMatrixTranslation(-9.0f, 1.2f, 0.0f));
     LeftWall->ObjCBIndex = objCBIndex++;
     LeftWall->Geo = mGeometries["shapeGeo"].get();
@@ -737,7 +750,17 @@ void ShapesApp::BuildRenderItems()
     LeftWall->IndexCount = LeftWall->Geo->DrawArgs["box"].IndexCount;
     LeftWall->StartIndexLocation = LeftWall->Geo->DrawArgs["box"].StartIndexLocation;
     LeftWall->BaseVertexLocation = LeftWall->Geo->DrawArgs["box"].BaseVertexLocation;
-    mAllRitems.push_back(std::move(LeftWall));
+    mAllRitems.push_back(std::move(LeftWall));*/
+
+   /* auto BackWall = std::make_unique<RenderItem>();
+    XMStoreFloat4x4(&BackWall->World, XMMatrixScaling(0.5f, 5.0f, 0.5f) * XMMatrixTranslation(0.0f, 1.2f, 0.0f));
+    BackWall->ObjCBIndex = objCBIndex++;
+    BackWall->Geo = mGeometries["shapeGeo"].get();
+    BackWall->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    BackWall->IndexCount = BackWall->Geo->DrawArgs["box"].IndexCount;
+    BackWall->StartIndexLocation = BackWall->Geo->DrawArgs["box"].StartIndexLocation;
+    BackWall->BaseVertexLocation = BackWall->Geo->DrawArgs["box"].BaseVertexLocation;
+    mAllRitems.push_back(std::move(BackWall));*/
 
     auto gridRitem = std::make_unique<RenderItem>();
     gridRitem->World = MathHelper::Identity4x4();
