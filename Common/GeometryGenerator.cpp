@@ -396,7 +396,66 @@ GeometryGenerator::MeshData GeometryGenerator::CreateTriangularPrism(float botto
 
 	return meshData;
 }
+GeometryGenerator::MeshData GeometryGenerator::CreateTorus(float radius, float crossRadius, uint32 sliceCount, uint32 crossCount)
+{
+	MeshData meshData;
 
+	// The steps for each of the separate rotations
+	float thetaStep = 2.0f * XM_PI / sliceCount; // the steps around the ring
+	float phiStep = 2.0f * XM_PI / crossCount; // the steps around the cross section
+
+	// For each slice around the circumference of the torus
+	for (uint32 i = 0; i <= sliceCount; ++i)
+	{
+		float theta = i * thetaStep;
+
+		// for each vertex around the cross section
+		for (uint32 j = 0; j <= crossCount; ++j)
+		{
+			float phi = j * phiStep;
+
+			Vertex v;
+
+			v.Position.x = radius * cosf(theta) + crossRadius * sinf(phi) * cosf(theta);
+			v.Position.y = crossRadius * cosf(phi);
+			v.Position.z = radius * sinf(theta) + crossRadius * sinf(phi) * sinf(theta);
+
+			// Partial derivative of P with respect to theta
+			v.TangentU.x = -crossRadius * sinf(phi) * sinf(theta);
+			v.TangentU.y = 0.0f;
+			v.TangentU.z = crossRadius * sinf(phi) * cosf(theta);
+
+			XMVECTOR T = XMLoadFloat3(&v.TangentU);
+			XMStoreFloat3(&v.TangentU, XMVector3Normalize(T));
+
+			XMVECTOR p = XMLoadFloat3(&v.Position);
+			XMStoreFloat3(&v.Normal, XMVector3Normalize(p));
+
+			v.TexC.x = theta / XM_2PI;
+			v.TexC.y = phi / XM_PI;
+
+			meshData.Vertices.push_back(v);
+		}
+	}
+
+	uint32 baseIndex = 0;
+	uint32 ringVertexCount = sliceCount + 1;
+	for (uint32 i = 0; i < sliceCount; ++i)
+	{
+		for (uint32 j = 0; j < crossCount; ++j)
+		{
+			meshData.Indices32.push_back(i * (sliceCount + 1) + (j + 1));
+			meshData.Indices32.push_back(i * (sliceCount + 1) + j);
+			meshData.Indices32.push_back((i + 1) * (sliceCount + 1) + j);
+
+			meshData.Indices32.push_back(i * (sliceCount + 1) + (j + 1));
+			meshData.Indices32.push_back((i + 1) * (sliceCount + 1) + j);
+			meshData.Indices32.push_back((i + 1) * (sliceCount + 1) + (j + 1));
+		}
+	}
+
+	return meshData;
+}
 GeometryGenerator::MeshData GeometryGenerator::CreateWedge(float width, float height, float depth, uint32 numSubdivisions)
 {
 	MeshData meshData;

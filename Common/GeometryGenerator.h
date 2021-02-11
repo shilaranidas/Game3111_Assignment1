@@ -115,6 +115,10 @@ public:
 	/// <summary>
 	/// 
 	/// </summary>
+	MeshData GeometryGenerator::CreateTorus(float radius, float crossRadius, uint32 sliceCount, uint32 crossCount);
+	/// <summary>
+	/// 
+	/// </summary>
 	MeshData GeometryGenerator::CreateTriangularPrism(float bottomRadius, float topRadius, float height, uint32 stackCount);
 	/// <summary>
 	/// wedge
