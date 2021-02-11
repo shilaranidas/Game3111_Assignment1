@@ -113,6 +113,10 @@ public:
 	/// <returns></returns>
 	MeshData CreateDiamond(float width, float height, float depth, uint32 numSubdivisions);
 	/// <summary>
+	/// 
+	/// </summary>
+	MeshData GeometryGenerator::CreateTriangularPrism(float bottomRadius, float topRadius, float height, uint32 stackCount);
+	/// <summary>
 	/// wedge
 	/// </summary>
 	/// <param name="width"></param>
