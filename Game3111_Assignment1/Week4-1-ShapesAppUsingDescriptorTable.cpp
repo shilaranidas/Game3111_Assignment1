@@ -914,6 +914,12 @@ void ShapesApp::BuildRenderItems()
     objCBIndex++;
     CreateItem("torus", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(3.0f, 5.0f, 0.0f), XMMatrixRotationRollPitchYaw(0.0f, 0.0f, 0.0f), objCBIndex);// torus primitive
     objCBIndex++;
+    CreateItem("pyramid", XMMatrixScaling(1.0f, 1.0f, 1.0f), XMMatrixTranslation(6.0f, 3.45f, 0.0f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// front right pyramid
+    objCBIndex++;
+    CreateItem("cone", XMMatrixScaling(1.0f, 2.0f, 1.0f), XMMatrixTranslation(-4.0f, 5.0f, 0.0f), XMMatrixRotationRollPitchYaw(0.f, 0.f, 0.f), objCBIndex);// back left cone
+    objCBIndex++;
+    CreateItem("wedge", XMMatrixScaling(1.f, 1.0f, 2.0f), XMMatrixTranslation(0.0f, 5.0f, -2.0f), XMMatrixRotationRollPitchYaw(0.f, XM_PIDIV2, 0.f), objCBIndex);//back top wedge
+    objCBIndex++;
    /* auto LeftWall = std::make_unique<RenderItem>();
     XMStoreFloat4x4(&LeftWall->World, XMMatrixScaling(0.5f, 5.0f, 18.0f) * XMMatrixTranslation(-9.0f, 1.2f, 0.0f));
     LeftWall->ObjCBIndex = objCBIndex++;
