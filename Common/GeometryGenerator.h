@@ -104,6 +104,15 @@ public:
 	/// <returns></returns>
 	MeshData CreatePyramid(float width, float height, float depth, uint32 numSubdivisions);
 	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="width"></param>
+	/// <param name="height"></param>
+	/// <param name="depth"></param>
+	/// <param name="numSubdivisions"></param>
+	/// <returns></returns>
+	MeshData CreateDiamond(float width, float height, float depth, uint32 numSubdivisions);
+	/// <summary>
 	/// wedge
 	/// </summary>
 	/// <param name="width"></param>
